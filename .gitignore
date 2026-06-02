@@ -1,0 +1,54 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.venv/
+venv/
+*.egg-info/
+dist/
+build/
+
+# Env
+.env
+
+# Storage
+storage/
+soundfonts/
+
+# Data
+data/
+
+# ML artifacts
+*.bin
+*.safetensors
+*.ckpt
+*.pt
+*.pth
+
+# Audio temp files
+*.wav
+
+# Notebooks
+.ipynb_checkpoints/
+
+# Tool caches
+.pytest_cache/
+.ruff_cache/
+
+# Coverage
+.coverage
+htmlcov/
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Claude Code
+.claude/
+
+# Alembic
+alembic/versions/*.pyc
