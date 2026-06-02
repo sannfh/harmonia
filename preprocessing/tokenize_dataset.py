@@ -25,7 +25,7 @@ import pretty_midi
 from miditok import REMI, TokenizerConfig
 from tqdm import tqdm
 
-from preprocessing.utils import build_conditioning_prompt, detect_key, get_instruments
+from .utils import build_conditioning_prompt, detect_key, get_instruments
 
 _TOKENIZER: REMI | None = None
 
