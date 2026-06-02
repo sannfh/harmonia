@@ -132,7 +132,9 @@ def main() -> None:
                 success += 1
 
     total_done = len(done) + success
-    print(f"Done: {success:,} new examples written ({total_done:,} total) → {args.output}")
+    print(
+        f"Done: {success:,} new examples written ({total_done:,} total) → {args.output}"
+    )
 
 
 if __name__ == "__main__":
