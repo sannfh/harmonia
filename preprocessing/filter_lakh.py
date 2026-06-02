@@ -21,7 +21,7 @@ import tarfile
 import urllib.request
 from pathlib import Path
 
-import pretty_midi
+from symusic import Score
 from tqdm import tqdm
 
 LMD_URL = "http://hog.ee.columbia.edu/craffel/lmd/lmd_full.tar.gz"
@@ -35,23 +35,23 @@ MIN_MELODIC_TRACKS = 1
 def _passes_filters(midi_path: Path) -> Path | None:
     """Return the path if the file passes all quality filters, else None."""
     try:
-        midi = pretty_midi.PrettyMIDI(str(midi_path))
+        score = Score(str(midi_path)).to("second")  # type: ignore[union-attr]
     except Exception:
         return None
 
-    duration = midi.get_end_time()
+    duration = score.end()
     if not (MIN_DURATION_S <= duration <= MAX_DURATION_S):
         return None
 
-    melodic_tracks = [i for i in midi.instruments if not i.is_drum]
-    if len(melodic_tracks) < MIN_MELODIC_TRACKS:
+    melodic = [t for t in score.tracks if not t.is_drum]
+    if len(melodic) < MIN_MELODIC_TRACKS:
         return None
 
-    total_notes = sum(len(i.notes) for i in melodic_tracks)
+    total_notes = sum(len(t.notes) for t in melodic)
     if total_notes < MIN_NOTES:
         return None
 
-    all_pitches = [n.pitch for i in melodic_tracks for n in i.notes]
+    all_pitches = [n.pitch for t in melodic for n in t.notes]
     in_range = sum(1 for p in all_pitches if 36 <= p <= 96)
     if in_range / len(all_pitches) < 0.5:
         return None
