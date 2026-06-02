@@ -22,6 +22,7 @@ import urllib.request
 from pathlib import Path
 
 import pretty_midi
+from tqdm import tqdm
 
 LMD_URL = "http://hog.ee.columbia.edu/craffel/lmd/lmd_full.tar.gz"
 
@@ -117,7 +118,14 @@ def main() -> None:
     )
 
     with mp.Pool(args.workers) as pool:
-        results = pool.map(_passes_filters, midi_files, chunksize=64)
+        results = list(
+            tqdm(
+                pool.imap(_passes_filters, midi_files, chunksize=64),
+                total=len(midi_files),
+                desc="Filtering",
+                unit="files",
+            )
+        )
 
     passing = [str(p) for p in results if p is not None]
     print(f"Passed: {len(passing):,} / {len(midi_files):,}")
