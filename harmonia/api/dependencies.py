@@ -14,7 +14,7 @@ from harmonia.infrastructure.storage import FileStorage
 
 @lru_cache
 def get_settings() -> Settings:
-    return Settings()
+    return Settings()  # type: ignore[call-arg]  — values come from env/.env file
 
 
 @lru_cache
