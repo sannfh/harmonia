@@ -26,8 +26,16 @@ class MusicParameters(BaseModel):
     @property
     def conditioning_prompt(self) -> str:
         """Build the conditioning string passed to the MIDI model."""
-        from preprocessing.utils import build_conditioning_prompt
-
-        return build_conditioning_prompt(
-            self.key, self.scale, self.tempo_bpm, self.instruments
+        mood = "bright" if self.scale == "major" else "melancholic"
+        if self.tempo_bpm < 70:
+            feel = "slow"
+        elif self.tempo_bpm < 120:
+            feel = "moderate"
+        else:
+            feel = "upbeat"
+        inst_str = ", ".join(self.instruments)
+        bpm = round(self.tempo_bpm)
+        return (
+            f"Compose a {mood} {feel} piece in {self.key} {self.scale} at {bpm} BPM "
+            f"featuring {inst_str}."
         )
