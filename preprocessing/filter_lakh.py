@@ -5,6 +5,14 @@ Writes the paths of passing files to a text file (one path per line).
 
 Usage:
     python preprocessing/filter_lakh.py --data-dir data/lakh --output data/filtered.txt
+
+If you already downloaded the archive elsewhere (e.g. Google Drive), pass --archive
+to skip the download and extract from that path instead:
+
+    python preprocessing/filter_lakh.py \\
+        --data-dir  /content/lakh \\
+        --archive   /content/drive/MyDrive/harmonia/data/lakh/lmd_full.tar.gz \\
+        --output    /content/drive/MyDrive/harmonia/data/filtered.txt
 """
 
 import argparse
@@ -42,7 +50,6 @@ def _passes_filters(midi_path: Path) -> Path | None:
     if total_notes < MIN_NOTES:
         return None
 
-    # At least some notes in a reasonable pitch range
     all_pitches = [n.pitch for i in melodic_tracks for n in i.notes]
     in_range = sum(1 for p in all_pitches if 36 <= p <= 96)
     if in_range / len(all_pitches) < 0.5:
@@ -67,20 +74,33 @@ def _download(url: str, dest: Path) -> None:
 
 def _extract(archive: Path, dest: Path) -> None:
     dest.mkdir(parents=True, exist_ok=True)
-    print(f"Extracting {archive} → {dest}")
+    print(f"Extracting {archive} → {dest}  (this takes a few minutes...)")
     with tarfile.open(archive, "r:gz") as tar:
-        tar.extractall(dest)
+        tar.extractall(dest, filter="data")
+    print("Extraction complete.")
 
 
 def main() -> None:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--data-dir", type=Path, default=Path("data/lakh"))
+    parser.add_argument(
+        "--data-dir",
+        type=Path,
+        default=Path("data/lakh"),
+        help="Directory to extract into and search for MIDI files",
+    )
+    parser.add_argument(
+        "--archive",
+        type=Path,
+        default=None,
+        help="Path to an already-downloaded lmd_full.tar.gz (skips download)",
+    )
     parser.add_argument("--output", type=Path, default=Path("data/filtered.txt"))
     parser.add_argument("--skip-download", action="store_true")
     parser.add_argument("--workers", type=int, default=mp.cpu_count())
     args = parser.parse_args()
 
-    archive = args.data_dir / "lmd_full.tar.gz"
+    # Resolve archive path
+    archive = args.archive if args.archive else args.data_dir / "lmd_full.tar.gz"
     extracted = args.data_dir / "lmd_full"
 
     if not args.skip_download and not archive.exists():
@@ -88,6 +108,8 @@ def main() -> None:
 
     if not extracted.exists():
         _extract(archive, args.data_dir)
+    else:
+        print(f"Already extracted at {extracted}, skipping.")
 
     midi_files = list(extracted.rglob("*.mid")) + list(extracted.rglob("*.midi"))
     print(
